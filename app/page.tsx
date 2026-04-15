@@ -26,13 +26,13 @@ export default function Dashboard() {
           <div className="col-span-8 row-span-4 min-h-0">
             <LiveFeed 
               label="Main Portal / OCR" 
-              streamSource="http://localhost:8000/video_feed" />
+              streamSource="http://localhost:8000/video_feed/cam2" />
           </div>
 
           {/* Right Feeds: Stacked nicely */}
           <div className="col-span-4 row-span-4 grid grid-rows-2 gap-4 min-h-0">
-             <LiveFeed label="Left Bogie" streamSource="http://localhost:8000/video_feed" />
-             <LiveFeed label="Right Bogie" streamSource="http://localhost:8000/video_feed" />
+             <LiveFeed label="Left Bogie" streamSource="http://localhost:8000/video_feed/cam1" />
+             <LiveFeed label="Right Bogie" streamSource="http://localhost:8000/video_feed/cam3" />
           </div>
 
           {/* Bottom Row: Takes remaining 2/6ths of the height */}
