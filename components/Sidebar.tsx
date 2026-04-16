@@ -1,7 +1,6 @@
-// components/Sidebar.tsx
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   LayoutDashboard, 
   Radio, 
@@ -10,13 +9,39 @@ import {
   Settings, 
   Users, 
   TrainFront,
+  Bell,
   X 
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { io } from 'socket.io-client';
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // 1. Listen for new anomalies via Socket.io
+  useEffect(() => {
+    const socket = io('http://127.0.0.1:8000');
+
+    socket.on('new_anomaly', () => {
+      // Only increment if we aren't currently looking at the maintenance page
+      if (window.location.pathname !== '/maintenance') {
+        setUnreadCount(prev => prev + 1);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  // 2. Reset count when user visits the action pages
+  useEffect(() => {
+    if (pathname === '/maintenance' || pathname === '/history') {
+      setUnreadCount(0);
+    }
+  }, [pathname]);
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', href: '/' },
@@ -28,28 +53,38 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-    // 1. Clear the localStorage (for client-side state)
     localStorage.removeItem('isAuthenticated');
-    
-    // 2. Clear the cookie (for middleware/server-side state)
     document.cookie = "auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    
-    // 3. Redirect to login
     window.location.href = '/login';
   };
 
   return (
     <aside className="w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col shrink-0 z-50">
-      {/* Portal Branding */}
-      <div className="p-6 flex items-center gap-3 border-b border-slate-800/50 bg-[#1e293b]/20">
-        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <TrainFront className="text-white" size={24} />
+      {/* Portal Branding & Alert Bell */}
+      <div className="p-6 flex items-center justify-between border-b border-slate-800/50 bg-[#1e293b]/20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <TrainFront className="text-white" size={24} />
+          </div>
+          <div>
+            <h1 className="text-[10px] font-black uppercase tracking-[0.15em] leading-tight text-white">
+              Railway <br />
+              <span className="text-blue-400">Monitoring</span>
+            </h1>
+          </div>
         </div>
-        <div>
-          <h1 className="text-[10px] font-black uppercase tracking-[0.15em] leading-tight text-white">
-            Railway <br />
-            <span className="text-blue-400">Monitoring</span>
-          </h1>
+
+        {/* Notification Bell UI */}
+        <div className="relative group cursor-pointer">
+          <Bell 
+            size={18} 
+            className={`transition-colors duration-500 ${unreadCount > 0 ? 'text-amber-500 animate-bounce' : 'text-slate-600'}`} 
+          />
+          {unreadCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-[#0f172a] animate-pulse">
+              {unreadCount}
+            </span>
+          )}
         </div>
       </div>
 
@@ -82,41 +117,27 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* Footer Info / User Section */}
+      {/* Footer / User Session Section */}
       <div className="p-4 border-t border-slate-800 bg-[#1e293b]/10">
-        <div className="flex items-center gap-3 px-2 py-3">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
-            <Users size={16} className="text-slate-400" />
+        <div className="flex items-center justify-between px-2 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
+              <Users size={16} className="text-slate-400" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-300 uppercase">Operator 042</span>
+              <span className="text-[9px] text-emerald-500 font-mono italic">Session Active</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-slate-300 uppercase">Operator 042</span>
-            <span className="text-[9px] text-emerald-500 font-mono">Terminal Active</span>
-          </div>
+          <button 
+            onClick={handleLogout}
+            className="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-md hover:bg-red-500/10"
+            title="Exit System"
+          >
+            <X size={16} />
+          </button>
         </div>
       </div>
-
-    <div className="p-4 border-t border-slate-800 bg-[#1e293b]/10">
-      <div className="flex items-center justify-between px-2 py-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
-            <Users size={16} className="text-slate-400" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-slate-300 uppercase">Operator 042</span>
-            <span className="text-[9px] text-emerald-500 font-mono">Session Active</span>
-          </div>
-        </div>
-        <button 
-          onClick={handleLogout}
-          className="text-slate-500 hover:text-red-400 transition-colors"
-          title="Exit System"
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </div>
-
-
     </aside>
   );
 };
