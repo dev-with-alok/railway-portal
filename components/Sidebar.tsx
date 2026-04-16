@@ -36,9 +36,9 @@ const Sidebar = () => {
     };
   }, []);
 
-  // 2. Reset count when user visits the action pages
+  // 2. Reset count when user visits the maintenance page
   useEffect(() => {
-    if (pathname === '/maintenance' || pathname === '/history') {
+    if (pathname === '/maintenance') {
       setUnreadCount(0);
     }
   }, [pathname]);
@@ -74,18 +74,22 @@ const Sidebar = () => {
           </div>
         </div>
 
-        {/* Notification Bell UI */}
-        <div className="relative group cursor-pointer">
+        {/* CLICKABLE NOTIFICATION BELL */}
+        <Link 
+          href="/maintenance" 
+          className="relative group p-2 hover:bg-slate-800/50 rounded-full transition-all"
+          title={unreadCount > 0 ? `View ${unreadCount} new alerts` : 'No new alerts'}
+        >
           <Bell 
             size={18} 
-            className={`transition-colors duration-500 ${unreadCount > 0 ? 'text-amber-500 animate-bounce' : 'text-slate-600'}`} 
+            className={`transition-colors duration-500 ${unreadCount > 0 ? 'text-amber-500 animate-bounce' : 'text-slate-600 group-hover:text-slate-400'}`} 
           />
           {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-[#0f172a] animate-pulse">
+            <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-[#0f172a] animate-pulse">
               {unreadCount}
             </span>
           )}
-        </div>
+        </Link>
       </div>
 
       {/* Navigation Links */}
