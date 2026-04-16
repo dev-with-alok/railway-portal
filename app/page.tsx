@@ -1,51 +1,53 @@
-// app/page.tsx
-import Sidebar from '@/components/Sidebar';
-import LiveFeed from '@/components/LiveFeed';
-import StatsPanel from '@/components/StatsPanel';
-import EventLog from '@/components/EventLog';
-import Timeline from '@/components/Timeline';
+"use client";
 
-export default function Dashboard() {
+import Sidebar from '@/components/Sidebar';
+import { Activity, ShieldCheck, TrainFront, AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
+
+export default function Overview() {
+  const stats = [
+    { label: 'Total Scans', value: '1,284', icon: <TrainFront size={20} className="text-blue-400" /> },
+    { label: 'Safety Index', value: '98.2%', icon: <ShieldCheck size={20} className="text-emerald-500" /> },
+    { label: 'Active Alerts', value: '3', icon: <AlertTriangle size={20} className="text-amber-500" /> },
+    { label: 'System Load', value: '24%', icon: <Activity size={20} className="text-blue-400" /> },
+  ];
+
   return (
     <div className="flex h-screen w-screen bg-[#020617] text-slate-200 overflow-hidden font-sans">
       <Sidebar />
       
-      <main className="flex-1 flex flex-col min-w-0 h-full">
-        {/* Header */}
-        <header className="h-14 border-b border-slate-800 flex items-center justify-between px-6 bg-[#020617] shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">System Monitoring:</span>
-            <span className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-widest">Nominal</span>
-          </div>
-        </header>
-
-        {/* Locked Bento Grid */}
-        <div className="p-4 grid grid-cols-12 grid-rows-6 gap-4 flex-1 min-h-0">
-          
-          {/* Main Feed: Takes top 4/6ths of the height */}
-          <div className="col-span-8 row-span-4 min-h-0">
-            <LiveFeed 
-              label="Main Portal / OCR" 
-              streamSource="http://localhost:8000/video_feed/cam2" />
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-white">System Overview</h1>
+            <p className="text-slate-500 text-sm font-mono mt-1">Railway Infrastructure Health & Monitoring Command</p>
           </div>
 
-          {/* Right Feeds: Stacked nicely */}
-          <div className="col-span-4 row-span-4 grid grid-rows-2 gap-4 min-h-0">
-             <LiveFeed label="Left Bogie" streamSource="http://localhost:8000/video_feed/cam1" />
-             <LiveFeed label="Right Bogie" streamSource="http://localhost:8000/video_feed/cam3" />
+          {/* Key Metrics */}
+          <div className="grid grid-cols-4 gap-6">
+            {stats.map((stat) => (
+              <div key={stat.label} className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-2 bg-slate-950 rounded-lg border border-slate-800">{stat.icon}</div>
+                </div>
+                <div className="text-3xl font-black text-white">{stat.value}</div>
+                <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mt-1">{stat.label}</div>
+              </div>
+            ))}
           </div>
 
-          {/* Bottom Row: Takes remaining 2/6ths of the height */}
-          <div className="col-span-3 row-span-2 bg-[#0a0f1e]/50 rounded-xl border border-slate-800 p-4 min-h-0">
-            <StatsPanel id="TRN-2024-X123" speed={24} />
-          </div>
-
-          <div className="col-span-5 row-span-2 bg-[#0a0f1e]/50 rounded-xl border border-slate-800 min-h-0 flex flex-col overflow-hidden">
-            <EventLog />
-          </div>
-
-          <div className="col-span-4 row-span-2 bg-[#0a0f1e]/50 rounded-xl border border-slate-800 p-4 min-h-0">
-            <Timeline totalCars={48} currentProgress={18} />
+          {/* Call to Action */}
+          <div className="bg-blue-600 rounded-2xl p-8 flex justify-between items-center shadow-2xl shadow-blue-900/20 border border-blue-400/20">
+            <div>
+              <h2 className="text-xl font-bold text-white uppercase tracking-tight">Ready for live inspection?</h2>
+              <p className="text-blue-100/70 text-sm mt-1">Switch to Live View to monitor camera streams and OCR detections.</p>
+            </div>
+            <Link 
+              href="/live" 
+              className="px-6 py-3 bg-white text-blue-600 font-black uppercase tracking-widest text-xs rounded-xl hover:bg-blue-50 transition-all shadow-xl"
+            >
+              Initialize Live View
+            </Link>
           </div>
         </div>
       </main>

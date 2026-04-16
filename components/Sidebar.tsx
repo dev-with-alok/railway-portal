@@ -9,7 +9,8 @@ import {
   Wrench, 
   Settings, 
   Users, 
-  TrainFront 
+  TrainFront,
+  X 
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -25,6 +26,17 @@ const Sidebar = () => {
     { icon: <Settings size={20} />, label: 'Settings', href: '/settings' },
     { icon: <Users size={20} />, label: 'Users', href: '/users' },
   ];
+
+  const handleLogout = () => {
+    // 1. Clear the localStorage (for client-side state)
+    localStorage.removeItem('isAuthenticated');
+    
+    // 2. Clear the cookie (for middleware/server-side state)
+    document.cookie = "auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    
+    // 3. Redirect to login
+    window.location.href = '/login';
+  };
 
   return (
     <aside className="w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col shrink-0 z-50">
@@ -82,6 +94,29 @@ const Sidebar = () => {
           </div>
         </div>
       </div>
+
+    <div className="p-4 border-t border-slate-800 bg-[#1e293b]/10">
+      <div className="flex items-center justify-between px-2 py-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
+            <Users size={16} className="text-slate-400" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-300 uppercase">Operator 042</span>
+            <span className="text-[9px] text-emerald-500 font-mono">Session Active</span>
+          </div>
+        </div>
+        <button 
+          onClick={handleLogout}
+          className="text-slate-500 hover:text-red-400 transition-colors"
+          title="Exit System"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+
+
     </aside>
   );
 };

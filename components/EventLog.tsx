@@ -13,6 +13,7 @@ interface AnomalyEvent {
   status: 'open' | 'closed';
   image_url?: string; // Added to support images from backend
   isRead: boolean; // To track if the event has been viewed in the UI
+  wagon_id?: string; // for wagon id
 }
 
 export default function EventLog() {
@@ -100,7 +101,7 @@ export default function EventLog() {
             )}
 
             <span className={`opacity-40 text-[10px] font-bold ${!event.isRead && 'opacity-100 text-blue-400'}`}>
-              {event.timestamp}
+              {event.wagon_id} -- {event.timestamp}
             </span>
 
             <div className="flex-1">
