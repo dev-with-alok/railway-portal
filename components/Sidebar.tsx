@@ -16,7 +16,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { io } from 'socket.io-client';
 
-const Sidebar = () => {
+interface SidebarProps {
+  isCollapsed?: boolean;
+}
+
+const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -25,7 +29,6 @@ const Sidebar = () => {
     const socket = io('http://127.0.0.1:8000');
 
     socket.on('new_anomaly', () => {
-      // Only increment if we aren't currently looking at the maintenance page
       if (window.location.pathname !== '/maintenance') {
         setUnreadCount(prev => prev + 1);
       }
@@ -59,87 +62,125 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col shrink-0 z-50">
-      {/* Portal Branding & Alert Bell */}
-      <div className="p-6 flex items-center justify-between border-b border-slate-800/50 bg-[#1e293b]/20">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <TrainFront className="text-white" size={24} />
+    <aside 
+      className={`h-full bg-[#040d21] border-r border-slate-900 flex flex-col overflow-hidden w-full transition-all duration-300`}
+    >
+      {/* Portal Branding Header Section */}
+      <div 
+        className={`p-4 flex items-center border-b border-slate-950 bg-[#0b1528]/40 h-16 shrink-0 transition-all ${
+          isCollapsed ? 'justify-center px-2' : 'justify-between px-5'
+        }`}
+      >
+        <div className="flex items-center gap-3 overflow-hidden">
+          {/* Logo Badge Container */}
+          <div className="w-9 h-9 bg-gradient-to-b from-cyan-600 to-blue-600 rounded-lg flex items-center justify-center shadow-md shadow-cyan-950 shrink-0 border border-cyan-400/20">
+            <TrainFront className="text-cyan-100" size={20} />
           </div>
-          <div>
-            <h1 className="text-[10px] font-black uppercase tracking-[0.15em] leading-tight text-white">
-              Railway <br />
-              <span className="text-blue-400">Monitoring</span>
-            </h1>
-          </div>
+          
+          {/* Text Branding Group - Hidden on collapse */}
+          {!isCollapsed && (
+            <div className="animate-in fade-in zoom-in-95 duration-200">
+              <h1 className="text-sm font-sans font-normal tracking-[0.08em] text-[#a5f3fc] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)] leading-none">
+                AIRIRO
+              </h1>
+              <span className="text-[7px] font-mono font-bold tracking-widest text-slate-500 uppercase mt-0.5 block">
+                Control Node
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* CLICKABLE NOTIFICATION BELL */}
-        <Link 
-          href="/maintenance" 
-          className="relative group p-2 hover:bg-slate-800/50 rounded-full transition-all"
-          title={unreadCount > 0 ? `View ${unreadCount} new alerts` : 'No new alerts'}
-        >
-          <Bell 
-            size={18} 
-            className={`transition-colors duration-500 ${unreadCount > 0 ? 'text-amber-500 animate-bounce' : 'text-slate-600 group-hover:text-slate-400'}`} 
-          />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-[#0f172a] animate-pulse">
-              {unreadCount}
-            </span>
-          )}
-        </Link>
+        {/* CLICKABLE NOTIFICATION BELL - Hidden on collapse to optimize tiny bar real-estate */}
+        {!isCollapsed && (
+          <Link 
+            href="/maintenance" 
+            className="relative group p-1.5 hover:bg-slate-900 rounded-lg border border-transparent hover:border-slate-800 transition-all animate-in fade-in duration-200 shrink-0"
+            title={unreadCount > 0 ? `View ${unreadCount} new alerts` : 'No new alerts'}
+          >
+            <Bell 
+              size={16} 
+              className={`transition-colors duration-500 ${
+                unreadCount > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-500 group-hover:text-cyan-400'
+              }`} 
+            />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[8px] font-mono font-bold px-1 rounded-full border border-[#040d21]">
+                {unreadCount}
+              </span>
+            )}
+          </Link>
+        )}
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+      {/* Navigation Links List */}
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.label}
               href={item.href}
+              title={isCollapsed ? item.label : undefined}
               className={`
-                flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 group
+                flex items-center rounded-lg transition-all duration-150 group h-11 border
+                ${isCollapsed ? 'justify-center p-0' : 'px-4 py-2.5 gap-4'}
                 ${isActive 
-                  ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 border border-transparent'}
+                  ? 'bg-cyan-950/40 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.06),inset_0_0_8px_rgba(6,182,212,0.05)]' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900/60 border-transparent'}
               `}
             >
-              <span className={`${isActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-400'}`}>
+              {/* Navigation Icon */}
+              <span className={`shrink-0 ${isActive ? 'text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]' : 'text-slate-500 group-hover:text-cyan-400/80 transition-colors'}`}>
                 {item.icon}
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider">
-                {item.label}
-              </span>
-              {isActive && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+              
+              {/* Navigation Label Text - Blends out cleanly */}
+              {!isCollapsed && (
+                <span className="text-[11px] font-sans font-semibold uppercase tracking-wider animate-in fade-in slide-in-from-left-2 duration-200 truncate">
+                  {item.label}
+                </span>
+              )}
+              
+              {/* Active Marker Dot */}
+              {isActive && !isCollapsed && (
+                <div className="ml-auto w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-in fade-in scale-in duration-200" />
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer / User Session Section */}
-      <div className="p-4 border-t border-slate-800 bg-[#1e293b]/10">
-        <div className="flex items-center justify-between px-2 py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
-              <Users size={16} className="text-slate-400" />
+      {/* Footer Operator Session Section */}
+      <div className="p-3 border-t border-slate-950 bg-[#0b1528]/20 shrink-0 min-h-14 flex items-center">
+        <div className={`flex items-center w-full ${isCollapsed ? 'justify-center' : 'justify-between px-1'}`}>
+          <div className="flex items-center gap-3 overflow-hidden">
+            {/* Operator Thumbnail Circle */}
+            <div className="w-7 h-7 rounded-full bg-slate-950 flex items-center justify-center border border-slate-800 shrink-0">
+              <Users size={13} className="text-slate-400" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-300 uppercase">Operator 042</span>
-              <span className="text-[9px] text-emerald-500 font-mono italic">Session Active</span>
-            </div>
+            
+            {/* Session Info - Hidden on collapse */}
+            {!isCollapsed && (
+              <div className="flex flex-col animate-in fade-in duration-200 overflow-hidden">
+                <span className="text-[9px] font-bold text-slate-300 uppercase tracking-wide truncate">Operator 042</span>
+                <span className="text-[8px] text-cyan-400 font-mono tracking-tight italic flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+                  SYNC_ACTIVE
+                </span>
+              </div>
+            )}
           </div>
-          <button 
-            onClick={handleLogout}
-            className="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-md hover:bg-red-500/10"
-            title="Exit System"
-          >
-            <X size={16} />
-          </button>
+          
+          {/* Logout Action Trigger Button - Hidden on collapse */}
+          {!isCollapsed && (
+            <button 
+              onClick={handleLogout}
+              className="text-slate-500 hover:text-red-400 hover:bg-red-950/20 transition-all p-1.5 rounded-lg border border-transparent hover:border-red-500/10 animate-in fade-in duration-200 shrink-0"
+              title="Exit System"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
     </aside>

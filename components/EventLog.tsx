@@ -29,7 +29,7 @@ export default function EventLog() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch('http://127.0.0.1:8000/anomalies');
+      const res = await fetch('http://127.0.0.1:8000/api/anomalies');
       if (!res.ok) throw new Error(`Server Error: ${res.status}`);
       const data = await res.json();
       setEvents(data);
